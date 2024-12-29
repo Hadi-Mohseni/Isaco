@@ -1,4 +1,5 @@
 [tool.poetry]
+package-mode = false
 name = "isaco"
 version = "0.1.0"
 description = ""
@@ -7,6 +8,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.12"
+pyodbc = "^5.2.0"
 
 
 [build-system]
