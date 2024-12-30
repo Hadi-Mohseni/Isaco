@@ -39,6 +39,8 @@ class Product:
             delayed(compare)(i, isaco_products) for i in shop_products
         )
 
+        result = [row for row in result if row != None]
+
         return result
 
     def update(self):
