@@ -32,7 +32,7 @@ class Product:
         isaco_products = []
         for row in excel:
             isaco_products.append([row[1], row[0], row[6]])
-        shop_products = Database.list_all_products()[:50]
+        shop_products = Database.list_all_products()
         shop_products = [[x[0], x[1].replace(" ", ""), x[2]] for x in shop_products]
 
         result = Parallel(n_jobs=-1)(
