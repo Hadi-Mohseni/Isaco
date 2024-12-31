@@ -1,68 +1,114 @@
-from awesometkinter.bidirender import render_text as _
 from models import Product
-from tkinter import *
-from tkinter import messagebox
-import customtkinter
-from UI import Table
+from PyQt5 import QtWidgets
+import sys
+from typing import List
+from PyQt5.QtCore import Qt
+import asyncio
 
 
-def load_products():
-    products = Product.list_all()
-    table.set(products)
+class MainForm(QtWidgets.QWidget):
+
+    def __init__(self):
+        super().__init__()
+        self.main_layout = QtWidgets.QVBoxLayout(self)
+        self.top_layout = QtWidgets.QHBoxLayout()
+        self.bottom_layout = QtWidgets.QHBoxLayout()
+        self.main_layout.addLayout(self.top_layout)
+        self.main_layout.addLayout(self.bottom_layout)
+        self.initialize_table()
+        self.initialize_bottom_bar()
+
+    def initialize_table(self):
+        self.table = QtWidgets.QTableWidget()
+        self.table.setColumnCount(6)
+        self.table.setRowCount(0)
+        headers = ["شرح", "بارکد", "قیمت فروشگاه", "قیمت شرکت", "وضعیت", "بروزرسانی؟"]
+        self.table.setHorizontalHeaderLabels(headers)
+        self.table.setLayoutDirection(Qt.RightToLeft)
+        self.top_layout.addWidget(self.table)
+        self.table.setColumnWidth(0, 500)
+        self.table.setColumnWidth(1, 150)
+        self.table.setColumnWidth(2, 150)
+        self.table.setColumnWidth(3, 150)
+        self.table.setColumnWidth(4, 150)
+        self.table.setSortingEnabled(True)
+
+    def set_products(self, products=List[Product]):
+        self.products = products
+        self.checkboxes = []
+
+        for row, product in enumerate(products):
+            self.table.insertRow(row)
+            description = QtWidgets.QTableWidgetItem(str(product.description))
+            barcode = QtWidgets.QTableWidgetItem(str(product.barcode))
+            price = QtWidgets.QTableWidgetItem(str(product.price))
+            company_price = QtWidgets.QTableWidgetItem(str(product.company_price))
+            status = QtWidgets.QTableWidgetItem(str(product.status))
+            check_box = QtWidgets.QCheckBox()
+            check_box.setChecked(False)
+            check_box.stateChanged.connect(product.on_checkbox_changed)
+
+            # Set columns to fill the table horizontally
+            self.table.setItem(row, 0, description)
+            self.table.setItem(row, 1, barcode)
+            self.table.setItem(row, 2, price)
+            self.table.setItem(row, 3, company_price)
+            self.table.setItem(row, 4, status)
+            self.table.setCellWidget(row, 5, check_box)
+
+    def initialize_bottom_bar(self):
+        self.btn_update = QtWidgets.QPushButton("بروزرسانی")
+        self.btn_start = QtWidgets.QPushButton("شروع")
+
+        # Left side widgets
+        left_layout = QtWidgets.QVBoxLayout()
+        left_layout.addWidget(self.btn_update)
+
+        # Right side widgets
+        right_layout = QtWidgets.QVBoxLayout()
+        right_layout.addWidget(self.btn_start)
+
+        # Add left and right layouts to bottom layout
+        self.bottom_layout.addLayout(left_layout)
+        self.bottom_layout.addLayout(right_layout)
+
+        self.btn_start.clicked.connect(self.start)
+        self.btn_update.clicked.connect(self.update_prices)
+
+    def start(self):
+        excel_path, _ = QtWidgets.QFileDialog.getOpenFileName(
+            windows,
+            "Open File",
+            "",
+            "Excel Files (*.xlsx)",
+        )
+
+        if excel_path:
+            products = Product.list_all(excel_path)
+            self.set_products(products)
+
+    def update_prices(self):
+        for product in self.products:
+            if product.update == True:
+                product.update_price()
+
+        QtWidgets.QMessageBox.information(
+            self,
+            "عملیات موفق",
+            "قیمت ها با موفقیت بروزرسانی شدند!",
+            QtWidgets.QMessageBox.Ok,
+            QtWidgets.QMessageBox.Ok,
+        )
+
+        self.table.clearContents()
+        self.products = []
 
 
-def update_price():
-    if messagebox.askyesno("Message", _("آیا مطمئن به بروزرسانی هستید؟")):
-        table.update_price()
-
-
-customtkinter.set_appearance_mode("dark")
-customtkinter.set_default_color_theme("dark-blue")
-
-root = customtkinter.CTk()
-root.title("دستیار ایساکو")
-root.columnconfigure(0, weight=1)
-root.rowconfigure(0, weight=1)
-
-# --------------- Main Frame
-# ---------------
-
-mainframe = customtkinter.CTkFrame(root, width=500, height=700)
-table = Table(mainframe, width=500, height=500)
-
-mainframe.grid(row=0, column=0, sticky=NSEW)
-mainframe.rowconfigure(0, weight=1)
-mainframe.columnconfigure(0, weight=1)
-table.grid(row=0, column=0, sticky=NSEW)
-
-# --------------- Bottom Frame
-# ---------------
-b_frame = customtkinter.CTkFrame(root, width=200, height=50)
-bl_frame = customtkinter.CTkFrame(b_frame, width=200, height=100)
-br_frame = customtkinter.CTkFrame(b_frame, width=200, height=100)
-
-btn_start = customtkinter.CTkButton(
-    br_frame,
-    text=_("شروع"),
-    command=load_products,
-    height=100,
-)
-
-btn_update = customtkinter.CTkButton(
-    bl_frame,
-    text=_("بروزرسانی"),
-    command=update_price,
-    height=100,
-    fg_color="white",
-    text_color="black",
-)
-
-b_frame.grid(row=1, column=0, sticky=(N, E, W))
-bl_frame.grid(row=0, column=0, sticky=NSEW)
-br_frame.grid(row=0, column=1, sticky=NSEW)
-btn_start.grid(row=0, column=0, sticky=NSEW)
-btn_update.grid(row=0, column=0, sticky=NSEW)
-b_frame.columnconfigure(0, weight=1)
-
-
-root.mainloop()
+if __name__ == "__main__":
+    app = QtWidgets.QApplication(sys.argv)
+    windows = MainForm()
+    windows.resize(500, 500)
+    windows.move(100, 100)
+    windows.show()
+    text = QtWidgets.QLineEdit()
+    sys.exit(app.exec_())

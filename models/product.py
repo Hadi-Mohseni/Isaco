@@ -1,7 +1,7 @@
 from joblib import Parallel, delayed
-from tkinter import filedialog
 from .db import Database
 import pandas
+from PyQt5.QtCore import Qt
 
 
 class Product:
@@ -18,17 +18,24 @@ class Product:
         self.price = int(price)
         self.company_price = int(company_price) + (10000 - int(company_price) % 10000)
         self.status = "افزایش" if self.company_price > self.price else "کاهش"
+        self.update = False
+
+    def on_checkbox_changed(self, state):
+        if state == Qt.Checked:
+            self.update = True
+        else:
+            self.update = False
 
     @staticmethod
-    def list_all():
-        filename = filedialog.askopenfile(filetypes=(("Excel file", "*.xlsx"),))
+    def list_all(file_path: str):
 
         def compare(product, isaco_products):
             for ip in isaco_products:
                 if product[1] == ip[1]:
                     return Product(product[0], product[1], product[2], ip[2])
 
-        excel = pandas.read_excel(filename.name, dtype=str).to_numpy()
+        excel = pandas.read_excel(file_path, dtype=str).to_numpy()
+
         isaco_products = []
         for row in excel:
             isaco_products.append([row[1], row[0], row[6]])
@@ -39,9 +46,12 @@ class Product:
             delayed(compare)(i, isaco_products) for i in shop_products
         )
 
-        result = [row for row in result if row != None]
-
+        result = [
+            product
+            for product in result
+            if product != None and product.price != product.company_price
+        ]
         return result
 
-    def update(self):
+    def update_price(self):
         Database.update_product_price(self.barcode, self.company_price)
