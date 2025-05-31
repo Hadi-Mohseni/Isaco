@@ -20,9 +20,17 @@ class MainForm(QtWidgets.QWidget):
 
     def initialize_table(self):
         self.table = QtWidgets.QTableWidget()
-        self.table.setColumnCount(6)
+        self.table.setColumnCount(7)
         self.table.setRowCount(0)
-        headers = ["شرح", "بارکد", "قیمت فروشگاه", "قیمت شرکت", "وضعیت", "بروزرسانی؟"]
+        headers = [
+            "شرح",
+            "بارکد",
+            "قیمت فروشگاه",
+            "قیمت شرکت",
+            "وضعیت",
+            "موجودی",
+            "بروزرسانی؟",
+        ]
         self.table.setHorizontalHeaderLabels(headers)
         self.table.setLayoutDirection(Qt.RightToLeft)
         self.top_layout.addWidget(self.table)
@@ -31,6 +39,8 @@ class MainForm(QtWidgets.QWidget):
         self.table.setColumnWidth(2, 150)
         self.table.setColumnWidth(3, 150)
         self.table.setColumnWidth(4, 150)
+        self.table.setColumnWidth(5, 150)
+        self.table.setColumnWidth(6, 150)
         self.table.setSortingEnabled(True)
 
     def set_products(self, products=List[Product]):
@@ -44,6 +54,7 @@ class MainForm(QtWidgets.QWidget):
             price = QtWidgets.QTableWidgetItem(str(product.price))
             company_price = QtWidgets.QTableWidgetItem(str(product.company_price))
             status = QtWidgets.QTableWidgetItem(str(product.status))
+            quantity = QtWidgets.QTableWidgetItem(str(product.quantity))
             check_box = QtWidgets.QCheckBox()
             check_box.setChecked(False)
             check_box.stateChanged.connect(product.on_checkbox_changed)
@@ -54,7 +65,8 @@ class MainForm(QtWidgets.QWidget):
             self.table.setItem(row, 2, price)
             self.table.setItem(row, 3, company_price)
             self.table.setItem(row, 4, status)
-            self.table.setCellWidget(row, 5, check_box)
+            self.table.setItem(row, 5, quantity)
+            self.table.setCellWidget(row, 6, check_box)
 
     def initialize_bottom_bar(self):
         self.btn_update = QtWidgets.QPushButton("بروزرسانی")

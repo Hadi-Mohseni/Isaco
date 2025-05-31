@@ -10,7 +10,7 @@ class Database:
         cnxn = pyodbc.connect(connection_string)
         cursor = cnxn.cursor()
         cursor.execute(
-            "select Kala.shrh, Kala.CodKala, KalaGimat.Gimat  from KalaGimat inner join Kala on Kala.CodKala=KalaGimat.CodKala where Kala.shrh like '%ساکو%'"
+            " select Kala.shrh, Kala.CodKala, KalaGimat.Gimat, MojodiKala_View.Mojodi  from KalaGimat inner join Kala on Kala.CodKala=KalaGimat.CodKala inner join MojodiKala_View on kala.CodKala = MojodiKala_View.CodKala where Kala.shrh like '%ساکو%' and MojodiKala_View.SalMali = 1404"
         )
         result = cursor.fetchall()
         return result
