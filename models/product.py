@@ -49,7 +49,7 @@ class Product:
         ]
 
         result = Parallel(n_jobs=-1)(
-            delayed(compare)(i, isaco_products) for i in shop_products[:100]
+            delayed(compare)(i, isaco_products) for i in shop_products
         )
 
         result = [
